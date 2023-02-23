@@ -12,13 +12,13 @@ LIB-SSE CODE
 """
 import os
 
-import schemes.interface.inverted_index_sse
-from schemes.CJJ14.PiBas.config import DEFAULT_CONFIG, PiBasConfig
-from schemes.CJJ14.PiBas.structures import PiBasKey, PiBasToken, PiBasEncryptedDatabase, PiBasResult
+import CJJ14.interface.inverted_index_sse
+from CJJ14.PiBas.config import DEFAULT_CONFIG, PiBasConfig
+from CJJ14.PiBas.structures import PiBasKey, PiBasToken, PiBasEncryptedDatabase, PiBasResult
 from toolkit.bytes_utils import int_to_bytes
 
 
-class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
+class PiBas(CJJ14.interface.inverted_index_sse.InvertedIndexSSE):
     """PiBas Construction described by Cash et al. [CJJ+14]"""
 
     def __init__(self, config: dict = DEFAULT_CONFIG):
