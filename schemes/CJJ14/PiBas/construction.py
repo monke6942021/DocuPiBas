@@ -76,7 +76,7 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
         """Search Algorithm"""
         D = edb.D
         K11, K12 = tk1.K1, tk1.K2
-        K21, K22 = tk2.K21, tk2.K22
+        K21, K22 = tk2.K1, tk2.K2
         result = []
         c = 0
         while True:
@@ -89,17 +89,17 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             if cipher1 is not None:
                 result.append(self.config.ske.Decrypt(K12, cipher1))
             if cipher2 is not None:
-                result.append(self.config.ske.Decrypt(K22, cipher1))
+                result.append(self.config.ske.Decrypt(K22, cipher2))
             c += 1
 
-        return PiBasResult(result)
+        return PiBasResult(list(set(result)))
     
     # This is also untested
     def _AndSearch(self, edb: PiBasEncryptedDatabase, tk1: PiBasToken, tk2: PiBasToken) -> PiBasResult:
         """Search Algorithm"""
         D = edb.D
         K11, K12 = tk1.K1, tk1.K2
-        K21, K22 = tk2.K21, tk2.K22
+        K21, K22 = tk2.K1, tk2.K2
         result1 = []
         result2 = []
         c = 0
@@ -113,7 +113,7 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             if cipher1 is not None:
                 result1.append(self.config.ske.Decrypt(K12, cipher1))
             if cipher2 is not None:
-                result2.append(self.config.ske.Decrypt(K22, cipher1))
+                result2.append(self.config.ske.Decrypt(K22, cipher2))
             c += 1
 
         result = list(set(result1).intersection(set(result2)))
