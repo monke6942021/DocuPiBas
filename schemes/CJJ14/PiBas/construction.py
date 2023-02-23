@@ -70,6 +70,55 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             c += 1
 
         return PiBasResult(result)
+    
+    # This is untested
+    def _OrSearch(self, edb: PiBasEncryptedDatabase, tk1: PiBasToken, tk2: PiBasToken) -> PiBasResult:
+        """Search Algorithm"""
+        D = edb.D
+        K11, K12 = tk1.K1, tk1.K2
+        K21, K22 = tk2.K21, tk2.K22
+        result = []
+        c = 0
+        while True:
+            addr1 = self.config.prf_f(K11, int_to_bytes(c))
+            addr2 = self.config.prf_f(K21, int_to_bytes(c))
+            cipher1 = D.get(addr1)
+            cipher2 = D.get(addr2)
+            if cipher1 is None and cipher2 is None:
+                break
+            if cipher1 is not None:
+                result.append(self.config.ske.Decrypt(K12, cipher1))
+            if cipher2 is not None:
+                result.append(self.config.ske.Decrypt(K22, cipher1))
+            c += 1
+
+        return PiBasResult(result)
+    
+    # This is also untested
+    def _AndSearch(self, edb: PiBasEncryptedDatabase, tk1: PiBasToken, tk2: PiBasToken) -> PiBasResult:
+        """Search Algorithm"""
+        D = edb.D
+        K11, K12 = tk1.K1, tk1.K2
+        K21, K22 = tk2.K21, tk2.K22
+        result1 = []
+        result2 = []
+        c = 0
+        while True:
+            addr1 = self.config.prf_f(K11, int_to_bytes(c))
+            addr2 = self.config.prf_f(K21, int_to_bytes(c))
+            cipher1 = D.get(addr1)
+            cipher2 = D.get(addr2)
+            if cipher1 is None and cipher2 is None:
+                break
+            if cipher1 is not None:
+                result1.append(self.config.ske.Decrypt(K12, cipher1))
+            if cipher2 is not None:
+                result2.append(self.config.ske.Decrypt(K22, cipher1))
+            c += 1
+
+        result = list(set(result1).intersection(set(result2)))
+        
+        return PiBasResult(result)
 
     def KeyGen(self) -> PiBasKey:
         key = self._Gen()
