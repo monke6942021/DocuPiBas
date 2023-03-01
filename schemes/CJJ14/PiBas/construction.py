@@ -73,7 +73,7 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
                     database[bytes(word, 'utf-8')].add(bytes(doc_name, 'utf-8'))
                     # print(type(bytes(word, 'utf-8')), type(bytes(doc_name, 'utf-8')))
             
-        pdfFileObj.close()
+            pdfFileObj.close()
         return self._Enc(K, database)
 
     def _Trap(self, K: PiBasKey, keyword: bytes) -> PiBasToken:
