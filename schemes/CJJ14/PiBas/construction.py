@@ -66,11 +66,13 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
                     if word.lower() in {'the', 'a', 'an', '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}:
                         continue
                     
-                    if bytes(word, 'utf-8') not in database.keys():
-                        database[bytes(word, 'utf-8')] = {b''}
-                        database[bytes(word, 'utf-8')].remove(b'')
+                    b_word = bytes(word, 'utf-8')
                     
-                    database[bytes(word, 'utf-8')].add(bytes(doc_name, 'utf-8'))
+                    if b_word not in database.keys():
+                        database[b_word] = {b''}
+                        database[b_word].remove(b'')
+                    
+                    database[b_word].add(bytes(doc_name, 'utf-8'))
                     # print(type(bytes(word, 'utf-8')), type(bytes(doc_name, 'utf-8')))
             
             pdfFileObj.close()
