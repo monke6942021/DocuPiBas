@@ -11,6 +11,8 @@ LIB-SSE CODE
 @description: ΠBas Construction described by Cash et al. [CJJ+14]
 """
 import os
+import PyPDF2
+import re
 
 import schemes.interface.inverted_index_sse
 from schemes.CJJ14.PiBas.config import DEFAULT_CONFIG, PiBasConfig
@@ -44,9 +46,35 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             K2 = self.config.prf_f(K, b'\x02' + keyword)
             for c, identifier in enumerate(database[keyword]):
                 l = self.config.prf_f(K1, int_to_bytes(c))
+                # print(identifier)
                 d = self.config.ske.Encrypt(K2, identifier)
                 L.append((l, d))
         return PiBasEncryptedDatabase.build_from_list(L)
+    
+    def _DocEnc(self, K: PiBasKey, doc_names: list) -> PiBasEncryptedDatabase:
+        database = {}
+        
+        for doc_name in doc_names:
+            pdfFileObj = open(doc_name, 'rb')
+            pdfReader = PyPDF2.PdfReader(pdfFileObj)
+            
+            for i in range(len(pdfReader.pages)):
+                pageObj = pdfReader.pages[i]
+                word_list = pageObj.extract_text().replace('/', ' ').replace('\n', ' ').replace('.', ' ').replace('!', ' ').replace(',', ' ').replace('?', ' ').replace('(', ' ').replace(')', ' ').split(' ')
+                
+                for word in word_list:
+                    if word.lower() in {'the', 'a', 'an', '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}:
+                        continue
+                    
+                    if bytes(word, 'utf-8') not in database.keys():
+                        database[bytes(word, 'utf-8')] = {b''}
+                        database[bytes(word, 'utf-8')].remove(b'')
+                    
+                    database[bytes(word, 'utf-8')].add(bytes(doc_name, 'utf-8'))
+                    # print(type(bytes(word, 'utf-8')), type(bytes(doc_name, 'utf-8')))
+            
+        pdfFileObj.close()
+        return self._Enc(K, database)
 
     def _Trap(self, K: PiBasKey, keyword: bytes) -> PiBasToken:
         """Trapdoor Generation Algorithm"""

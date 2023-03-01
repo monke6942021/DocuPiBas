@@ -31,7 +31,7 @@ class TestPiBas(unittest.TestCase):
         db = {
             b"China": [b"12345678", b"23221233", b"23421232"],
             b"Ukraine":
-                [b"\x00\x00az\x02\x03sc", b"\x00\x00\x00\x00\x01\x00\x02\x01"]
+                [b"\x00\x00az\x02\x03sc", b"\x00\x00\x00\x00\x01\x00\x02\x01", b"12345678"]
         }
 
         config_dict = schemes.CJJ14.PiBas.config.DEFAULT_CONFIG
@@ -41,9 +41,28 @@ class TestPiBas(unittest.TestCase):
 
         encrypted_index = scheme._Enc(key, db)
         token1 = scheme._Trap(key, b"China")
-        token2 = scheme._Trap(key, b"China")
-        result = scheme._OrSearch(encrypted_index, token1, token2)
-        self.assertEqual(db[b"China"], result.result)
+        token2 = scheme._Trap(key, b"Ukraine")
+        result = scheme._AndSearch(encrypted_index, token1, token2)
+        print(db[b"China"])
+        print(db[b"Ukraine"])
+        print(result.result)
+        self.assertEqual(db[b"China"].sort(), result.result.sort())
+    
+    def test_doc(self):
+        doc_names = {"shrek-script-pdf.pdf", "shrek-2-script-pdf.pdf"}
+        
+        config_dict = schemes.CJJ14.PiBas.config.DEFAULT_CONFIG
+
+        scheme = PiBas(config_dict)
+        key = scheme._Gen()
+        
+        encrypted_index = scheme._DocEnc(key, doc_names)
+        keyword = input("Enter the keyword you are looking for: ")
+        token = scheme._Trap(key, bytes(keyword, 'utf-8'))
+        result = scheme._Search(encrypted_index, token)
+        print(result.result)
+        
+        
 
     def test_method_correctness(self):
         keyword_count = 1000
@@ -124,7 +143,7 @@ class TestPiBas(unittest.TestCase):
 if __name__ == "__main__":
     test = TestPiBas()
     try:
-        test.test_method_correctness_simple_version()
+        test.test_doc()
     except AssertionError:
         print("It didn't work! :(")
     
