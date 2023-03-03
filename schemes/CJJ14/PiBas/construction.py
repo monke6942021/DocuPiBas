@@ -56,7 +56,7 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
                 L.append((l, d))
         return PiBasEncryptedDatabase.build_from_list(L), mitra_counters
     
-    def _DocEnc(self, K: PiBasKey, doc_names: list) -> PiBasEncryptedDatabase:
+    def _DocEnc(self, K: PiBasKey, doc_names: list) -> tuple[PiBasEncryptedDatabase, dict]:
         """Inverted index for a list of document names, to be encrypted."""
         database = {}
         
