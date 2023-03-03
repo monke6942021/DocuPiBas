@@ -69,6 +69,11 @@ class PiBasEncryptedDatabase(SSEEncryptedDatabase):
         if not isinstance(other, PiBasEncryptedDatabase):
             return False
         return self.D == other.D
+    
+    def add(self, l: bytes, d: bytes):
+        self.D[l] = d
+        return
+        
 
 
 class PiBasToken(SSEToken):

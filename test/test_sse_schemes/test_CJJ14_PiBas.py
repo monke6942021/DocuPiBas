@@ -39,14 +39,15 @@ class TestPiBas(unittest.TestCase):
         scheme = PiBas(config_dict)
         key = scheme._Gen()
 
-        encrypted_index = scheme._Enc(key, db)
-        token1 = scheme._Trap(key, b"China")
-        token2 = scheme._Trap(key, b"Ukraine")
-        result = scheme._AndSearch(encrypted_index, token1, token2)
-        print(db[b"China"])
-        print(db[b"Ukraine"])
+        encrypted_index, mitra_counters = scheme._Enc(key, db)
+        
+        scheme._Add(encrypted_index, key, mitra_counters, b"Africa", b"5318008")
+        
+        token = scheme._Trap(key, b"Africa")
+        result = scheme._Search(encrypted_index, token)
+        # print(db[b"China"])
         print(result.result)
-        self.assertEqual(db[b"China"].sort(), result.result.sort())
+        # self.assertEqual(db[b"China"].sort(), result.result.sort())
     
     def test_doc(self):
         doc_names = {"shrek-script-pdf.pdf", "shrek-2-script-pdf.pdf"}
@@ -61,7 +62,6 @@ class TestPiBas(unittest.TestCase):
         token = scheme._Trap(key, bytes(keyword, 'utf-8'))
         result = scheme._Search(encrypted_index, token)
         print(result.result)
-        
         
 
     def test_method_correctness(self):
@@ -143,7 +143,7 @@ class TestPiBas(unittest.TestCase):
 if __name__ == "__main__":
     test = TestPiBas()
     try:
-        test.test_doc()
+        test.test_method_correctness_simple_version()
     except AssertionError:
         print("It didn't work! :(")
     

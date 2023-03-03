@@ -36,22 +36,28 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
         K = os.urandom(self.config.param_lambda)
         return PiBasKey(K)
 
-    def _Enc(self, K: PiBasKey, database: dict) -> PiBasEncryptedDatabase:
+    def _Enc(self, K: PiBasKey, database: dict) -> tuple[PiBasEncryptedDatabase, dict]:
         """Encrypted the given database under the key"""
         K = K.K
         L = []
+        
+        mitra_counters = {}
 
         for keyword in database:
             K1 = self.config.prf_f(K, b'\x01' + keyword)
             K2 = self.config.prf_f(K, b'\x02' + keyword)
+            mitra_counters[keyword] = [0]
             for c, identifier in enumerate(database[keyword]):
                 l = self.config.prf_f(K1, int_to_bytes(c))
+                # print(type(l))
                 # print(identifier)
+                mitra_counters[keyword] = c
                 d = self.config.ske.Encrypt(K2, identifier)
                 L.append((l, d))
-        return PiBasEncryptedDatabase.build_from_list(L)
+        return PiBasEncryptedDatabase.build_from_list(L), mitra_counters
     
     def _DocEnc(self, K: PiBasKey, doc_names: list) -> PiBasEncryptedDatabase:
+        """Inverted index for a list of document names, to be encrypted."""
         database = {}
         
         for doc_name in doc_names:
@@ -77,6 +83,23 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             
             pdfFileObj.close()
         return self._Enc(K, database)
+    
+    def _Add(self, edb: PiBasEncryptedDatabase, K: PiBasKey, mitra_counters: dict, keyword: bytes, value: bytes):
+        K = K.K 
+        
+        K1 = self.config.prf_f(K, b'\x01' + keyword)
+        K2 = self.config.prf_f(K, b'\x02' + keyword)
+        
+        if keyword not in mitra_counters.keys():
+            mitra_counters[keyword] = 0
+        else:
+            mitra_counters[keyword] += 1
+        
+        l = self.config.prf_f(K1, int_to_bytes(mitra_counters[keyword]))
+        d = self.config.ske.Encrypt(K2, value)
+        
+        edb.add(l, d)
+        
 
     def _Trap(self, K: PiBasKey, keyword: bytes) -> PiBasToken:
         """Trapdoor Generation Algorithm"""
