@@ -158,6 +158,7 @@ class Service:
         self.sse_scheme = None
         self.sse_module_loader = None
         self.edb = None
+        self.counters = None
         self.key = None
 
         if ClientServiceState.is_config_created(self.get_current_service_state()):
@@ -488,7 +489,9 @@ class Service:
 
         self._load_sse_scheme()
         self._load_sse_key()
-        self.edb = self.sse_scheme.EDBSetup(self.key, database)
+        tup = self.sse_scheme.EDBSetup(self.key, database)
+        self.edb = tup[0]
+        self.counters = tup[1]
         FileManager.write_encrypted_database(self.sid, self.edb.serialize())
         self.set_current_service_state(ClientServiceState.set_db_encrypted(self.get_current_service_state(), True))
         self._store_service_meta()
@@ -566,6 +569,60 @@ class Service:
 
         if wait:
             await asyncio.wait_for(fut, 60)
+    
+    async def handle_insert(self, keyword: bytes,
+                            value: bytes,
+                            wait=False,
+                            wait_callback_func=None):
+        await self.load_websocket()
+        
+        if not ClientServiceState.is_db_uploaded(self.get_current_service_state()):
+            reason = f"The database of service {self.sid} has not been uploaded."
+            logger.error(reason)
+            raise ValueError(reason)
+
+        self._load_sse_scheme()
+        self._load_sse_key()
+        
+        fut = None
+        if wait:
+            if wait_callback_func is None:
+                wait_callback_func = self.handle_result_future
+            # Get the current event loop.
+            loop = asyncio.get_running_loop()
+            # Create a new Future object.
+            fut = loop.create_future()
+            fut.add_done_callback(wait_callback_func)
+            self.register_upload_echo_future_once("insert", fut)
+        
+        self.sse_scheme._Insert(self.edb, self.key, self.counters, keyword, value)
+    
+    # async def handle_delete(self, keyword: bytes,
+    #                         value: bytes,
+    #                         wait=False,
+    #                         wait_callback_func=None):
+    #     await self.load_websocket()
+        
+    #     if not ClientServiceState.is_db_uploaded(self.get_current_service_state()):
+    #         reason = f"The database of service {self.sid} has not been uploaded."
+    #         logger.error(reason)
+    #         raise ValueError(reason)
+
+    #     self._load_sse_scheme()
+    #     self._load_sse_key()
+        
+    #     fut = None
+    #     if wait:
+    #         if wait_callback_func is None:
+    #             wait_callback_func = self.handle_result_future
+    #         # Get the current event loop.
+    #         loop = asyncio.get_running_loop()
+    #         # Create a new Future object.
+    #         fut = loop.create_future()
+    #         fut.add_done_callback(wait_callback_func)
+    #         self.register_upload_echo_future_once("delete", fut)
+        
+    #     self.sse_scheme._Delete(self.edb, self.key, self.counters, keyword, value)
 
     def handle_result(self, result_bytes: bytes):
         result = self.sse_module_loader.SSEResult.deserialize(result_bytes, self.config_object)

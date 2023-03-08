@@ -186,3 +186,29 @@ async def search(keyword: str, output_format="raw", *, sid: str = '', sname: str
         print(f">>> Search error, {e}.")
     finally:
         await __client_service.close_service()
+    
+
+
+async def insert(keyword: str, value: str, output_format="raw", *, sid: str = '', sname: str = ''):
+    if output_format not in BytesConverter.supported_format:
+        print(f">>> Unsupported output format {output_format}.")
+        return
+    
+    global __client_service
+    
+    if not sid:
+        # get sid from sname
+        sid = service_name_handler.get_service_id_by_sname(sname)
+
+    __client_service = Service(sid)
+    
+    try:
+        keyword_bytes = bytes(keyword, encoding="utf-8")
+        value_bytes = bytes(value, encoding="utf-8")
+        await __client_service.handle_insert(
+            keyword_bytes, value_bytes, wait=True, wait_callback_func=functools.partial(__search_echo_handler,
+                                                                           output_format=output_format))
+    except Exception as e:
+        print(f">>> Insertion error, {e}.")
+    finally:
+        await __client_service.close_service()

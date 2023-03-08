@@ -109,6 +109,29 @@ async def search(sid, sname, keyword, output_format):
 
     await client_commands.search(keyword, output_format, sid=sid, sname=sname)
 
+@cli.command()
+@click.option("--sid", help='service id', default='')
+@click.option("--sname", help='service name', default='')
+@click.option("--keyword", help='keyword to insert')
+@click.option("--value", help='value to insert')
+@click.option("--output-format",
+              help='Specify the output format, which currently supports '
+                   'int, hex, raw and utf8, where utf8 format output must require that'
+                   ' the byte string of the file identifier must be converted from a utf8 string',
+              default="raw")
+async def insert(sid, sname, keyword, value, output_format):
+    if keyword is None:
+        click.echo(f'Incomplete options: --keyword')
+        return
+    if value is None:
+        click.echo(f'Incomplete options: --value')
+        return
+    if not sid and not sname:
+        click.echo(f'One of the two options --sid or --sname must be assigned')
+        return
+
+    await client_commands.insert(keyword, value, output_format, sid=sid, sname=sname)
+
 
 if __name__ == '__main__':
     cli(_anyio_backend="asyncio")
