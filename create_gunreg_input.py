@@ -1461,15 +1461,53 @@ for query_info in query_info_list:
     # for info in query_info:
     #     f.write(info)
     
-    # SEARCH_LOCAL
+    # SEARCH GLOBAL
     # f.write("sg\n")
     # f.write(query_info[5])
     
-    # SEARCH GLOBAL
+    # SEARCH LOCAL
     # f.write("sl\n")
     # f.write(query_info[0])
     # f.write(query_info[5])
     pass
+
+# UPDATE
+# i_or_d = r.randint(0, 1)
+# if i_or_d == 0:
+#     query = query_info_list[r.randint(0, query_count-1)]
+#     f.write("d \n")
+#     for i in range(7):
+#         f.write(query[i])
+# else:
+#     f.write("i \n")
+#     county_idx = str(r.randint(0, county_count-1))+"\n"
+#     f.write(county_idx)
+#     first_name = names[r.randint(0, len(names)-1)]+"\n"
+#     f.write(first_name)
+#     last_name = names[r.randint(0, len(names)-1)]+"\n"
+#     f.write(last_name)
+#     reg_num = str(r.randint(0, 10000))+"\n"
+#     f.write(reg_num)
+#     phone_num = rand_phone_number() + "\n"
+#     f.write(phone_num)
+#     serial_num = str(highest_unused_serial_number)+"\n"
+#     highest_unused_serial_number += 1
+#     f.write(serial_num)
+#     gun_model = guns[r.randint(0, len(guns)-1)]+"\n"
+#     f.write(gun_model)
+
+# SEARCH GLOBAL
+# f.write("sg\n")
+# serial_num = query_info_list[r.randint(0, query_count-1)][5]
+# f.write(serial_num)
+
+# SEARCH LOCAL
+# f.write("sl\n")
+# query_idx = r.randint(0, query_count-1)
+# county_idx = query_info_list[query_idx][0]
+# serial_num = query_info_list[query_idx][5]
+# f.write(county_idx)
+# f.write(serial_num)
         
 f.write('q')
 
