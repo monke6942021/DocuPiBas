@@ -1497,9 +1497,9 @@ for query_info in query_info_list:
 #     f.write(gun_model)
 
 # SEARCH GLOBAL
-# f.write("sg\n")
-# serial_num = query_info_list[r.randint(0, query_count-1)][5]
-# f.write(serial_num)
+f.write("sg\n")
+serial_num = query_info_list[0][5] # r.randint(0, query_count-1)][5]
+f.write(serial_num)
 
 # SEARCH LOCAL
 # f.write("sl\n")

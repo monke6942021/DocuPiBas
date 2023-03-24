@@ -52,7 +52,7 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
                 # print(type(l))
                 # print(identifier)
                 mitra_counters[keyword] = c
-                d = self.config.ske.Encrypt(K2, identifier)
+                d = self.config.ske.Encrypt(K2, identifier + int_to_bytes(1))
                 L.append((l, d))
         return PiBasEncryptedDatabase.build_from_list(L), mitra_counters
     
@@ -84,7 +84,8 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             pdfFileObj.close()
         return self._Enc(K, database)
     
-    def _Add(self, edb: PiBasEncryptedDatabase, K: PiBasKey, mitra_counters: dict, keyword: bytes, value: bytes):
+    def _Insert(self, edb: PiBasEncryptedDatabase, K: PiBasKey, mitra_counters: dict, keyword: bytes, value: bytes):
+        """I used the mitra tactic to add things to the encrypted database in constant time."""
         K = K.K 
         
         K1 = self.config.prf_f(K, b'\x01' + keyword)
@@ -96,10 +97,25 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             mitra_counters[keyword] += 1
         
         l = self.config.prf_f(K1, int_to_bytes(mitra_counters[keyword]))
-        d = self.config.ske.Encrypt(K2, value)
+        d = self.config.ske.Encrypt(K2, value + int_to_bytes(1))
         
         edb.add(l, d)
+    
+    def _Delete(self, edb: PiBasEncryptedDatabase, K: PiBasKey, mitra_counters: dict, keyword: bytes, value: bytes):
+        K = K.K 
         
+        K1 = self.config.prf_f(K, b'\x01' + keyword)
+        K2 = self.config.prf_f(K, b'\x02' + keyword)
+        
+        if keyword not in mitra_counters.keys():
+            mitra_counters[keyword] = 0
+        else:
+            mitra_counters[keyword] += 1
+        
+        l = self.config.prf_f(K1, int_to_bytes(mitra_counters[keyword]))
+        d = self.config.ske.Encrypt(K2, value + int_to_bytes(2))
+        
+        edb.add(l, d)
 
     def _Trap(self, K: PiBasKey, keyword: bytes) -> PiBasToken:
         """Trapdoor Generation Algorithm"""
@@ -112,17 +128,26 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
         """Search Algorithm"""
         D = edb.D
         K1, K2 = tk.K1, tk.K2
-        result = []
+        result = {""}
+        result.remove("")
         c = 0
         while True:
             addr = self.config.prf_f(K1, int_to_bytes(c))
             cipher = D.get(addr)
             if cipher is None:
                 break
-            result.append(self.config.ske.Decrypt(K2, cipher))
+            message = self.config.ske.Decrypt(K2, cipher)
+            if message[-1] == 2:
+                try:
+                    result.remove(message[:-1])
+                except:
+                    pass
+            else:
+                # print(message[-1])
+                result.add(message[:-1])
             c += 1
 
-        return PiBasResult(result)
+        return PiBasResult(list(result))
     
     # This is untested
     def _OrSearch(self, edb: PiBasEncryptedDatabase, tk1: PiBasToken, tk2: PiBasToken) -> PiBasResult:
@@ -130,7 +155,8 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
         D = edb.D
         K11, K12 = tk1.K1, tk1.K2
         K21, K22 = tk2.K1, tk2.K2
-        result = []
+        result = {""}
+        result.remove("")
         c = 0
         while True:
             addr1 = self.config.prf_f(K11, int_to_bytes(c))
@@ -140,7 +166,16 @@ class PiBas(schemes.interface.inverted_index_sse.InvertedIndexSSE):
             if cipher1 is None and cipher2 is None:
                 break
             if cipher1 is not None:
-                result.append(self.config.ske.Decrypt(K12, cipher1))
+                message = self.config.ske.Decrypt(K2, cipher)
+                if message[-1] == 2:
+                    try:
+                        result.remove(message[:-1])
+                    except:
+                        pass
+                else:
+                    print(message[-1])
+                    result.add(message[:-1])
+                c += 1
             if cipher2 is not None:
                 result.append(self.config.ske.Decrypt(K22, cipher2))
             c += 1

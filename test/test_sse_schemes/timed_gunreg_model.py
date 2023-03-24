@@ -1,12 +1,14 @@
 import sys
 sys.path[0] = sys.path[0] + "/../.."
-# # print(sys.path)
+# print(sys.path)
 
 import schemes
 import schemes.CJJ14.PiBas.config
 from schemes.CJJ14.PiBas.config import PiBasConfig
 from schemes.CJJ14.PiBas.construction import PiBas
 from schemes.CJJ14.PiBas.structures import PiBasKey, PiBasToken, PiBasEncryptedDatabase, PiBasResult
+
+import time
 
 config_dict = schemes.CJJ14.PiBas.config.DEFAULT_CONFIG
 
@@ -67,64 +69,74 @@ class State:
         self.counties[county_idx].delete(owner, gun)
 
 if __name__ == "__main__":
-    county_num = int(input()) #"Enter the number of counties: "))
+    county_num = int(input())
+    start_time = time.time()
     state = State(county_num)
+    elapsed_time = time.time() - start_time
+    # print(f"Empty Database set up in {elapsed_time} seconds.")
     
     query = 'a'
     
     # print("""Possible Queries:
-        #   sg - Search Global
-        #   sl - Search Local
-        #   i - insert
-        #   d - delete
-        #   q - quit
-        #   """)
+    #       sg - Search Global
+    #       sl - Search Local
+    #       i - insert
+    #       d - delete
+    #       q - quit
+    #       """)
+    
+    final_query_time = 0
 
     while True:
-        query = input() #)
+        query = input()
         if query[0] == 'q':
+            print(final_query_time)
             break
         elif query == "sg":
-            serial_number = input() #)
-            # print(state.search(bytes(serial_number, "utf-8")))
+            start_time = time.time()
+            serial_number = input()
             result = state.search(bytes(serial_number, "utf-8"))
+            # print(result)
+            final_query_time = time.time() - start_time
         elif query == "sl":
-            county_idx = int(input()) #"Enter the county index you want to search: "))
-            serial_number = input() #"Enter serial number: ")
-            # print(state.search_county(bytes(serial_number, "utf-8"), county_idx))
+            start_time = time.time()
+            county_idx = int(input())
+            serial_number = input()
             result = state.search_county(bytes(serial_number, "utf-8"), county_idx)
+            final_query_time = time.time() - start_time
         elif query[0] == "i":
-            county_idx = int(input()) #"Enter the county index needed for insertion: "))
+            start_time = time.time()
+            county_idx = int(input())
             
-            first_name = input() #"Enter owner's first name: ")
-            last_name = input() #"Enter owner's last name: ")
-            reg_num = input() #"Enter owner's registry number: ")
-            phone_num = input() #"Enter owner's phone number: ")
+            first_name = input()
+            last_name = input()
+            reg_num = input()
+            phone_num = input()
             new_owner = Owner(first_name, last_name, reg_num, phone_num)
             
-            ser_num = input() #"Enter serialization number for the gun: ")
-            model = input() #"Enter the model of the gun: ")
+            ser_num = input()
+            model = input()
             new_gun = Gun(ser_num, model)
             
             state.insert(county_idx, new_owner, new_gun)
-            # print(f"{first_name} {last_name} succesfully added.")
+            final_query_time = time.time() - start_time
         elif query[0] == "d":
-            county_idx = int(input()) #"Enter the county index needed for insertion: "))
+            start_time = time.time()
+            county_idx = int(input())
             
-            first_name = input() #"Enter owner's first name: ")
-            last_name = input() #"Enter owner's last name: ")
-            reg_num = input() #"Enter owner's registry number: ")
-            phone_num = input() #"Enter owner's phone number: ")
+            first_name = input()
+            last_name = input()
+            reg_num = input()
+            phone_num = input()
             new_owner = Owner(first_name, last_name, reg_num, phone_num)
             
-            ser_num = input() #"Enter serialization number for the gun: ")
-            model = input() #"Enter the model of the gun: ")
+            ser_num = input()
+            model = input()
             new_gun = Gun(ser_num, model)
             
             state.delete(county_idx, new_owner, new_gun)
-            # print(f"{first_name} {last_name} succesfully removed.")
+            final_query_time = time.time() - start_time
         else:
-            # print("Not a valid query.")
             pass
     
     
