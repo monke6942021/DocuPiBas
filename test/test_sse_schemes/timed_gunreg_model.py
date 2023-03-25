@@ -85,25 +85,41 @@ if __name__ == "__main__":
     #       q - quit
     #       """)
     
-    final_query_time = 0
+    query_times = []
+    
+    queried = False
+    
+    
 
     while True:
         query = input()
         if query[0] == 'q':
-            print(final_query_time)
+            print(sum(query_times)/len(query_times))
+            # print(len(query_times))
             break
         elif query == "sg":
+
             start_time = time.time()
             serial_number = input()
             result = state.search(bytes(serial_number, "utf-8"))
-            # print(result)
-            final_query_time = time.time() - start_time
+            elapsed_time = time.time() - start_time
+            if not queried:
+                queried = True
+                continue
+            print(f"{serial_number} found in {elapsed_time} seconds.")
+            query_times.append(elapsed_time)
+            
         elif query == "sl":
             start_time = time.time()
             county_idx = int(input())
             serial_number = input()
             result = state.search_county(bytes(serial_number, "utf-8"), county_idx)
-            final_query_time = time.time() - start_time
+            elapsed_time = time.time() - start_time
+            if not queried:
+                queried = True
+                continue
+            print(f"{serial_number} found in {elapsed_time} seconds.")
+            query_times.append(elapsed_time)
         elif query[0] == "i":
             start_time = time.time()
             county_idx = int(input())
