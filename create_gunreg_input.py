@@ -1463,7 +1463,8 @@ for query_info in query_info_list:
     
     # SEARCH GLOBAL
     # f.write("sg\n")
-    # f.write(query_info[5])
+    # for i in range(5):
+    #     f.write(query_info[5])
     
     # SEARCH LOCAL
     # f.write("sl\n")
@@ -1497,17 +1498,19 @@ for query_info in query_info_list:
 #     f.write(gun_model)
 
 # SEARCH GLOBAL
-f.write("sg\n")
-serial_num = query_info_list[0][5] # r.randint(0, query_count-1)][5]
-f.write(serial_num)
+# for i in range(11):
+#     f.write("sg\n")
+#     serial_num = query_info_list[r.randint(0, query_count-1)][5]
+#     f.write(serial_num)
 
 # SEARCH LOCAL
-# f.write("sl\n")
-# query_idx = r.randint(0, query_count-1)
-# county_idx = query_info_list[query_idx][0]
-# serial_num = query_info_list[query_idx][5]
-# f.write(county_idx)
-# f.write(serial_num)
+# for i in range(11):
+#     f.write("sl\n")
+#     query_idx = r.randint(0, query_count-1)
+#     county_idx = query_info_list[query_idx][0]
+#     serial_num = query_info_list[query_idx][5]
+#     f.write(county_idx)
+#     f.write(serial_num)
         
 f.write('q')
 
